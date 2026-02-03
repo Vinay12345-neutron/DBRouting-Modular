@@ -1,0 +1,12 @@
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+torch
+transformers
+accelerate
+bitsandbytes
+scikit-learn
+pandas
+numpy
+google-generativeai
+tqdm
+sentence-transformers
+einops

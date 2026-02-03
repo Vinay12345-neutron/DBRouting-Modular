@@ -1,0 +1,22 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment variables
+*.env
+
+# Databases
+*.db
+data/
+processed_data/
+offload_weights/
+
+
+# ML / cache (VERY IMPORTANT for your project)
+.cache/
+.huggingface/
+*.pt
+*.bin
+*.safetensors
+*.zip

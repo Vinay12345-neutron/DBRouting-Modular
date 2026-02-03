@@ -1,0 +1,206 @@
+{
+  "citeseer": {
+    "cites": [
+      "paper"
+    ],
+    "content": [
+      "paper"
+    ],
+    "paper": [
+      "cites",
+      "content"
+    ]
+  },
+  "scholar": {
+    "venue": [
+      "paper"
+    ],
+    "author": [
+      "writes"
+    ],
+    "dataset": [
+      "paperDataset"
+    ],
+    "journal": [
+      "paper"
+    ],
+    "keyphrase": [
+      "paperKeyphrase"
+    ],
+    "paper": [
+      "cite",
+      "journal",
+      "paperDataset",
+      "paperKeyphrase",
+      "venue",
+      "writes"
+    ],
+    "cite": [
+      "paper"
+    ],
+    "paperDataset": [
+      "dataset",
+      "paper"
+    ],
+    "paperKeyphrase": [
+      "keyphrase",
+      "paper"
+    ],
+    "writes": [
+      "author",
+      "paper"
+    ]
+  },
+  "icfp_1": {
+    "Inst": [
+      "Authorship"
+    ],
+    "Authors": [
+      "Authorship"
+    ],
+    "Papers": [
+      "Authorship"
+    ],
+    "Authorship": [
+      "Authors",
+      "Inst",
+      "Papers"
+    ]
+  },
+  "academic": {
+    "author": [
+      "domain_author",
+      "writes",
+      "organization"
+    ],
+    "conference": [
+      "domain_conference",
+      "publication"
+    ],
+    "domain": [
+      "domain_author",
+      "domain_conference",
+      "domain_journal",
+      "domain_keyword",
+      "domain_publication"
+    ],
+    "domain_author": [
+      "author",
+      "domain"
+    ],
+    "domain_conference": [
+      "conference",
+      "domain"
+    ],
+    "journal": [
+      "domain_journal",
+      "publication"
+    ],
+    "domain_journal": [
+      "domain",
+      "journal"
+    ],
+    "keyword": [
+      "domain_keyword",
+      "publication_keyword"
+    ],
+    "domain_keyword": [
+      "domain",
+      "keyword"
+    ],
+    "publication": [
+      "conference",
+      "journal",
+      "domain_publication",
+      "publication_keyword",
+      "writes",
+      "cite"
+    ],
+    "domain_publication": [
+      "domain",
+      "publication"
+    ],
+    "organization": [
+      "author"
+    ],
+    "publication_keyword": [
+      "publication",
+      "keyword"
+    ],
+    "writes": [
+      "author",
+      "publication"
+    ],
+    "cite": [
+      "publication"
+    ]
+  },
+  "language_corpus": {
+    "langs": [
+      "pages",
+      "langs_words",
+      "biwords"
+    ],
+    "pages": [
+      "langs",
+      "pages_words"
+    ],
+    "words": [
+      "langs_words",
+      "pages_words",
+      "biwords"
+    ],
+    "langs_words": [
+      "langs",
+      "words"
+    ],
+    "pages_words": [
+      "pages",
+      "words"
+    ],
+    "biwords": [
+      "langs",
+      "words"
+    ]
+  },
+  "epinions_1": {
+    "item": [
+      "review"
+    ],
+    "review": [
+      "item",
+      "useracct"
+    ],
+    "useracct": [
+      "review",
+      "trust"
+    ],
+    "trust": [
+      "useracct"
+    ]
+  },
+  "retail_complains": {
+    "state": [
+      "client"
+    ],
+    "callcenterlogs": [
+      "events"
+    ],
+    "client": [
+      "state",
+      "district",
+      "events"
+    ],
+    "district": [
+      "client",
+      "reviews"
+    ],
+    "events": [
+      "callcenterlogs",
+      "client"
+    ],
+    "reviews": [
+      "district"
+    ]
+  }
+}
