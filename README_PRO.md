@@ -1,37 +1,144 @@
-# High-Performance Setup (RTX 4090 / 24GB VRAM)
+# 🚀 DBRouting-Modular: RTX 5090 Server Guide
 
-Since you have access to an RTX 4090, you can run a much more powerful model than the "Nano" 0.5B version. This will significantly improve the accuracy of the **Modular Reasoning** re-ranking.
+This guide details how to deploy and run the "Modular Reasoning Re-Ranking" pipeline on a remote Linux server (e.g., RTX 5090 / A100 node).
 
-### 1. Upgrade the LLM
-Open `reranker.py` and change line 18:
+---
 
-```python
-# Change from 0.5B to 14B or 32B
-LLM_MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
-# OR "mistralai/Mistral-7B-Instruct-v0.3" 
+## 1. Connecting to the Server (SSH) 🔑
+
+Open your local terminal (PowerShell, CMD, or Terminal) and run:
+
+```powershell
+ssh username@ip_address
+# Example: ssh f20230448@10.1.19.142
 ```
 
-### 2. Performance Tuning
-On a 4090, you can increase processing speed.
-*   **Batch Size**: In `retrieval.py`, you can increase `batch_size` from 1 to 16 or 32 for much faster embedding generation.
-*   **Precision**: Ensure `torch_dtype=torch.float16` is used (already set); the 4090 handles this natively with Tensor Cores.
+- **Troubleshooting**: If it hangs, check if you need a VPN or specific network permissions.
+- **Tip**: To stay alive during network drops, use `tmux` or `screen` immediately after logging in.
 
-### 3. Expected Improvements
-*   **Better Mapping**: Larger models are better at identifying that "revenue" in a query maps to "total_sales" in a schema.
-*   **Smarter Adjacency**: Adjacency lists will be more accurate for complex joins (4+ tables).
-*   **Recall@1**: You should see a significant jump in accuracy compared to the 0.5B baseline.
+### Using TMUX (Highly Recommended)
+Once logged in, start a persistent session:
+```bash
+tmux new -s dbrouting
+```
+*(To detach later: `Ctrl+B` then `D`)*
+*(To reattach later: `tmux attach -t dbrouting`)*
 
-### 4. Running the Pro Pipeline
-1.  **Fresh Environment**:
-    ```bash
-    python -m venv venv
-    .\venv\Scripts\Activate
-    # EXTREMELY IMPORTANT: Install CUDA-enabled Torch
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-    pip install -r requirements.txt
-    ```
-2.  Ensure `data/` is present. (I think processed data works, as its already processed, no need the official zip folder.)
-2.  `python prepare_data.py`
-3.  `python retrieval.py`
-4.  `python reranker.py` (Wait for it to download the 14B model)
-5.  `python evaluate.py`
+---
+
+## 2. Setting Up the Project 📦
+
+### Option A: Via Git (Easiest)
+if your server has internet access:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Vinay12345-neutron/DBRouting-Modular.git
+
+# 2. Enter directory
+cd DBRouting-Modular
+```
+
+### Option B: Via SCP (If you have local changes not pushed)
+Run this from your **LOCAL** computer (new terminal):
+
+```powershell
+# Copy the entire directory to the server
+scp -r d:\Tanmay_SOP\DBRouting-Modular username@ip_address:~/
+```
+
+---
+
+## 3. Environment Setup 🐍
+
+Running on Linux usually requires a virtual environment.
+
+```bash
+# 1. Load Python module (if on a cluster/HPC)
+# module load python/3.10  <-- Uncomment if needed
+
+# 2. Create venv
+python3 -m venv venv
+
+# 3. Activate venv
+source venv/bin/activate
+
+# 4. Install Dependencies
+# Upgrade pip first
+pip install --upgrade pip
+
+# Install project requirements
+pip install -r requirements.txt
+
+# Install Critical GPU libraries
+pip install bitsandbytes accelerate python-dotenv
+```
+
+---
+
+## 4. Configuring for RTX 5090 (14B Model) ⚡
+
+Ensure `reranker_optimized.py` is configured for high performance:
+
+```python
+# Check verify these lines in reranker_optimized.py using: nano reranker_optimized.py
+
+LLM_MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"  # High-performance model
+USE_8BIT_QUANTIZATION = True                  # Efficient loading
+MAX_SAMPLES = None                            # Run ALL queries
+```
+
+---
+
+## 5. Running the Pipeline 🚀
+
+### Step 1: Prepare Data (If missing)
+Check if `processed_data/` exists.
+```bash
+ls -l processed_data/
+```
+If empty/missing, ensure you SCP'd the `data/` folder or run:
+```bash
+python prepare_data.py
+```
+
+### Step 2: Run Retrieval (If needed)
+```bash
+python retrieval.py
+```
+
+### Step 3: Run Reranker (Foreground test)
+Run for a minute to verify it loads:
+```bash
+python reranker_optimized.py
+```
+*Ctrl+C once you see the progress bar moving.*
+
+### Step 4: Run Reranker (Background Job) ✨
+Run the full job in the background so you can disconnect:
+
+```bash
+# Option A: Inside TMUX (Just run it)
+python reranker_optimized.py
+
+# Option B: Using Nohup (if not using tmux)
+nohup python reranker_optimized.py > run.log 2>&1 &
+```
+
+**Monitoring Progress:**
+```bash
+tail -f run.log   # or check the output json files via ls -l results/
+nvidia-smi -l 5   # Watch GPU usage update every 5 seconds
+```
+
+---
+
+## 6. Downloading Results 📥
+
+After completion, copy results back to your local machine.
+Run this on your **LOCAL** computer:
+
+```powershell
+# Download the results folder
+scp -r username@ip_address:~/DBRouting-Modular/results d:\Tanmay_SOP\Results_From_Server
+```

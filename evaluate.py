@@ -92,10 +92,10 @@ if __name__ == "__main__":
     calculate_metrics(os.path.join(RESULTS_DIR, "spider_retrieval_results.json"))
     
     print("\n--- Spider Re-ranked (Ours) ---")
-    calculate_metrics(os.path.join(RESULTS_DIR, "spider_reranked_results.json"))
+    calculate_metrics(os.path.join(RESULTS_DIR, "spider_reranked_local.json"))
 
     print("\n--- Bird Retrieval Baseline ---")
     calculate_metrics(os.path.join(RESULTS_DIR, "bird_retrieval_results.json"))
 
     print("\n--- Bird Re-ranked (Ours) ---")
-    calculate_metrics(os.path.join(RESULTS_DIR, "bird_reranked_results.json"))
+    calculate_metrics(os.path.join(RESULTS_DIR, "bird_reranked_local.json"))
