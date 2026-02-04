@@ -16,9 +16,9 @@ DATASETS = ["spider", "bird"]
 # LLM Config - Optimized for RTX 5090 / 4090
 LLM_MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
-# CRITICAL: Set this to True to enable 8-bit quantization
-# 14B model takes ~15GB VRAM in 8-bit. Fits easily on 24GB+ cards.
-USE_8BIT_QUANTIZATION = True
+# CRITICAL: Disable 8-bit for RTX 5090 (bitsandbytes issue with sm_120)
+# 32GB VRAM is enough for 14B in FP16 (approx 28GB).
+USE_8BIT_QUANTIZATION = False
 
 # Process ALL queries
 MAX_SAMPLES = None  # None = Run full dataset
