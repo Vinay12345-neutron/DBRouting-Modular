@@ -1,0 +1,156 @@
+{
+  "citeseer": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "scholar": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "icfp_1": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "academic": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "language_corpus": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "epinions_1": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "retail_complains": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "authors": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "world_1": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "city_record": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "geo": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "world": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "mondial_geo": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "address": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "chicago_crime": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "county_public_safety": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "climbing": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "protein_institute": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "restaurant": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "shipping": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "e_government": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  },
+  "store_product": {
+    "TableA": [
+      "TableB"
+    ],
+    "TableB": [],
+    "TableC": []
+  }
+}

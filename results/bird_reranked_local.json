@@ -1,0 +1,332 @@
+[
+  {
+    "question": "What are the alias of the cities with 0 population in 2010?",
+    "gold_db": "address",
+    "original_top1": "world_1",
+    "reranked_top1": "world_1",
+    "reranked_candidates": [
+      [
+        "world_1",
+        0.0,
+        0.7778077125549316
+      ],
+      [
+        "city_record",
+        0.0,
+        0.7778077125549316
+      ],
+      [
+        "geo",
+        0.0,
+        0.7778077125549316
+      ],
+      [
+        "world",
+        0.0,
+        0.7778077125549316
+      ],
+      [
+        "mondial_geo",
+        0.0,
+        0.7778077125549316
+      ]
+    ]
+  },
+  {
+    "question": "Among the cities with area code 608, how many cities implement daylight savings?",
+    "gold_db": "address",
+    "original_top1": "address",
+    "reranked_top1": "address",
+    "reranked_candidates": [
+      [
+        "address",
+        0.0,
+        0.7344496846199036
+      ],
+      [
+        "city_record",
+        0.0,
+        0.7344496846199036
+      ],
+      [
+        "world_1",
+        0.0,
+        0.7344496846199036
+      ],
+      [
+        "chicago_crime",
+        0.0,
+        0.7344496846199036
+      ],
+      [
+        "county_public_safety",
+        0.0,
+        0.7344496846199036
+      ]
+    ]
+  },
+  {
+    "question": "Provide the average elevation of the cities with alias Amherst.",
+    "gold_db": "address",
+    "original_top1": "geo",
+    "reranked_top1": "geo",
+    "reranked_candidates": [
+      [
+        "geo",
+        1.0,
+        0.9223439693450928
+      ],
+      [
+        "climbing",
+        1.0,
+        0.9223439693450928
+      ],
+      [
+        "mondial_geo",
+        1.0,
+        0.9223439693450928
+      ],
+      [
+        "protein_institute",
+        1.0,
+        0.9223439693450928
+      ],
+      [
+        "city_record",
+        1.0,
+        0.9223439693450928
+      ]
+    ]
+  },
+  {
+    "question": "What is the country and state of the city named Dalton?",
+    "gold_db": "address",
+    "original_top1": "geo",
+    "reranked_top1": "geo",
+    "reranked_candidates": [
+      [
+        "geo",
+        1.0,
+        0.8787583112716675
+      ],
+      [
+        "mondial_geo",
+        1.0,
+        0.8787583112716675
+      ],
+      [
+        "world",
+        1.0,
+        0.8787583112716675
+      ],
+      [
+        "world_1",
+        1.0,
+        0.8787583112716675
+      ],
+      [
+        "retail_complains",
+        1.0,
+        0.8787583112716675
+      ]
+    ]
+  },
+  {
+    "question": "Give at least five alias of cities with a postal point of post office.",
+    "gold_db": "address",
+    "original_top1": "retail_complains",
+    "reranked_top1": "retail_complains",
+    "reranked_candidates": [
+      [
+        "retail_complains",
+        1.0,
+        0.7740671277046204
+      ],
+      [
+        "restaurant",
+        1.0,
+        0.7740671277046204
+      ],
+      [
+        "shipping",
+        1.0,
+        0.7740671277046204
+      ],
+      [
+        "geo",
+        1.0,
+        0.7740671277046204
+      ],
+      [
+        "chicago_crime",
+        1.0,
+        0.7740671277046204
+      ]
+    ]
+  },
+  {
+    "question": "What is the difference in the number of cities with P.O. box only and cities with Post Office among the cities with area code 787?",
+    "gold_db": "address",
+    "original_top1": "address",
+    "reranked_top1": "address",
+    "reranked_candidates": [
+      [
+        "address",
+        0.0,
+        0.730104923248291
+      ],
+      [
+        "chicago_crime",
+        0.0,
+        0.730104923248291
+      ],
+      [
+        "retail_complains",
+        0.0,
+        0.730104923248291
+      ],
+      [
+        "shipping",
+        0.0,
+        0.730104923248291
+      ],
+      [
+        "county_public_safety",
+        0.0,
+        0.730104923248291
+      ]
+    ]
+  },
+  {
+    "question": "Among the cities belonging to the country named Arroyo, calculate the percentage of increase in the population in these cities from 2010 to 2020.",
+    "gold_db": "address",
+    "original_top1": "city_record",
+    "reranked_top1": "city_record",
+    "reranked_candidates": [
+      [
+        "city_record",
+        0.0,
+        0.7627474069595337
+      ],
+      [
+        "world_1",
+        0.0,
+        0.7627474069595337
+      ],
+      [
+        "geo",
+        0.0,
+        0.7627474069595337
+      ],
+      [
+        "world",
+        0.0,
+        0.7627474069595337
+      ],
+      [
+        "address",
+        0.0,
+        0.7627474069595337
+      ]
+    ]
+  },
+  {
+    "question": "Among the postal points in Texas, provide the zip codes and cities of postal points which have total beneficiaries of above 10000.",
+    "gold_db": "address",
+    "original_top1": "address",
+    "reranked_top1": "address",
+    "reranked_candidates": [
+      [
+        "address",
+        0.0,
+        0.8105871081352234
+      ],
+      [
+        "chicago_crime",
+        0.0,
+        0.8105871081352234
+      ],
+      [
+        "shipping",
+        0.0,
+        0.8105871081352234
+      ],
+      [
+        "retail_complains",
+        0.0,
+        0.8105871081352234
+      ],
+      [
+        "e_government",
+        0.0,
+        0.8105871081352234
+      ]
+    ]
+  },
+  {
+    "question": "Among the postal points in the District of Columbia, how many of them have an area with above 20000 black population?",
+    "gold_db": "address",
+    "original_top1": "address",
+    "reranked_top1": "address",
+    "reranked_candidates": [
+      [
+        "address",
+        0.0,
+        0.819041520357132
+      ],
+      [
+        "chicago_crime",
+        0.0,
+        0.819041520357132
+      ],
+      [
+        "county_public_safety",
+        0.0,
+        0.819041520357132
+      ],
+      [
+        "retail_complains",
+        0.0,
+        0.819041520357132
+      ],
+      [
+        "store_product",
+        0.0,
+        0.819041520357132
+      ]
+    ]
+  },
+  {
+    "question": "Provide the city where zip code 19019 is located and the alias of that city.",
+    "gold_db": "address",
+    "original_top1": "address",
+    "reranked_top1": "address",
+    "reranked_candidates": [
+      [
+        "address",
+        0.0,
+        0.8323487043380737
+      ],
+      [
+        "city_record",
+        0.0,
+        0.8323487043380737
+      ],
+      [
+        "geo",
+        0.0,
+        0.8323487043380737
+      ],
+      [
+        "world_1",
+        0.0,
+        0.8323487043380737
+      ],
+      [
+        "world",
+        0.0,
+        0.8323487043380737
+      ]
+    ]
+  }
+]

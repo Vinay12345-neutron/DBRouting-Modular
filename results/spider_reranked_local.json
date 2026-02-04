@@ -1,0 +1,332 @@
+[
+  {
+    "question": "return me the number of papers which contain the keyword \" Natural Language \" .",
+    "gold_db": "academic",
+    "original_top1": "citeseer",
+    "reranked_top1": "citeseer",
+    "reranked_candidates": [
+      [
+        "citeseer",
+        1.0,
+        0.6710104942321777
+      ],
+      [
+        "scholar",
+        1.0,
+        0.6710104942321777
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.6710104942321777
+      ],
+      [
+        "academic",
+        1.0,
+        0.6710104942321777
+      ],
+      [
+        "language_corpus",
+        1.0,
+        0.6710104942321777
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of the keywords of \" Making database systems usable \" .",
+    "gold_db": "academic",
+    "original_top1": "language_corpus",
+    "reranked_top1": "language_corpus",
+    "reranked_candidates": [
+      [
+        "language_corpus",
+        1.0,
+        0.5804897546768188
+      ],
+      [
+        "citeseer",
+        1.0,
+        0.5804897546768188
+      ],
+      [
+        "scholar",
+        1.0,
+        0.5804897546768188
+      ],
+      [
+        "academic",
+        1.0,
+        0.5804897546768188
+      ],
+      [
+        "epinions_1",
+        1.0,
+        0.5804897546768188
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of the keywords related to \" H. V. Jagadish \" .",
+    "gold_db": "academic",
+    "original_top1": "language_corpus",
+    "reranked_top1": "language_corpus",
+    "reranked_candidates": [
+      [
+        "language_corpus",
+        1.0,
+        0.5232731699943542
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.5232731699943542
+      ],
+      [
+        "retail_complains",
+        1.0,
+        0.5232731699943542
+      ],
+      [
+        "citeseer",
+        1.0,
+        0.5232731699943542
+      ],
+      [
+        "epinions_1",
+        1.0,
+        0.5232731699943542
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of keywords in VLDB conference .",
+    "gold_db": "academic",
+    "original_top1": "language_corpus",
+    "reranked_top1": "language_corpus",
+    "reranked_candidates": [
+      [
+        "language_corpus",
+        1.0,
+        0.7668042182922363
+      ],
+      [
+        "citeseer",
+        1.0,
+        0.7668042182922363
+      ],
+      [
+        "scholar",
+        1.0,
+        0.7668042182922363
+      ],
+      [
+        "academic",
+        1.0,
+        0.7668042182922363
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.7668042182922363
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of keywords in PVLDB .",
+    "gold_db": "academic",
+    "original_top1": "language_corpus",
+    "reranked_top1": "language_corpus",
+    "reranked_candidates": [
+      [
+        "language_corpus",
+        1.0,
+        0.8593189716339111
+      ],
+      [
+        "citeseer",
+        1.0,
+        0.8593189716339111
+      ],
+      [
+        "scholar",
+        1.0,
+        0.8593189716339111
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.8593189716339111
+      ],
+      [
+        "epinions_1",
+        1.0,
+        0.8593189716339111
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of keywords in the papers of \" University of Michigan \" .",
+    "gold_db": "academic",
+    "original_top1": "citeseer",
+    "reranked_top1": "citeseer",
+    "reranked_candidates": [
+      [
+        "citeseer",
+        1.0,
+        0.9057143926620483
+      ],
+      [
+        "scholar",
+        1.0,
+        0.9057143926620483
+      ],
+      [
+        "academic",
+        1.0,
+        0.9057143926620483
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.9057143926620483
+      ],
+      [
+        "language_corpus",
+        1.0,
+        0.9057143926620483
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of the papers of \" H. V. Jagadish \" containing keyword \" User Study \" .",
+    "gold_db": "academic",
+    "original_top1": "icfp_1",
+    "reranked_top1": "icfp_1",
+    "reranked_candidates": [
+      [
+        "icfp_1",
+        0.0,
+        0.6296693980693817
+      ],
+      [
+        "citeseer",
+        0.0,
+        0.6296693980693817
+      ],
+      [
+        "scholar",
+        0.0,
+        0.6296693980693817
+      ],
+      [
+        "academic",
+        0.0,
+        0.6296693980693817
+      ],
+      [
+        "authors",
+        0.0,
+        0.6296693980693817
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of papers in PVLDB containing keyword \" Keyword search \" .",
+    "gold_db": "academic",
+    "original_top1": "citeseer",
+    "reranked_top1": "citeseer",
+    "reranked_candidates": [
+      [
+        "citeseer",
+        1.0,
+        0.7356373071670532
+      ],
+      [
+        "scholar",
+        1.0,
+        0.7356373071670532
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.7356373071670532
+      ],
+      [
+        "academic",
+        1.0,
+        0.7356373071670532
+      ],
+      [
+        "authors",
+        1.0,
+        0.7356373071670532
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of papers in VLDB conference containing keyword \" Information Retrieval \" .",
+    "gold_db": "academic",
+    "original_top1": "citeseer",
+    "reranked_top1": "citeseer",
+    "reranked_candidates": [
+      [
+        "citeseer",
+        1.0,
+        0.6649599075317383
+      ],
+      [
+        "scholar",
+        1.0,
+        0.6649599075317383
+      ],
+      [
+        "icfp_1",
+        1.0,
+        0.6649599075317383
+      ],
+      [
+        "academic",
+        1.0,
+        0.6649599075317383
+      ],
+      [
+        "authors",
+        1.0,
+        0.6649599075317383
+      ]
+    ]
+  },
+  {
+    "question": "return me the number of authors who have papers containing keyword \" Relational Database \" .",
+    "gold_db": "academic",
+    "original_top1": "citeseer",
+    "reranked_top1": "citeseer",
+    "reranked_candidates": [
+      [
+        "citeseer",
+        0.0,
+        0.7661278247833252
+      ],
+      [
+        "icfp_1",
+        0.0,
+        0.7661278247833252
+      ],
+      [
+        "scholar",
+        0.0,
+        0.7661278247833252
+      ],
+      [
+        "academic",
+        0.0,
+        0.7661278247833252
+      ],
+      [
+        "authors",
+        0.0,
+        0.7661278247833252
+      ]
+    ]
+  }
+]
