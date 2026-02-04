@@ -1,3 +1,46 @@
+"""
+Dense Retrieval Script for Database Query Routing (Spider & BIRD)
+
+This script performs the initial dense retrieval stage for cross-domain
+NL-to-SQL query routing experiments using a pretrained embedding model.
+
+Overview:
+- Encodes natural language queries and database schemas into vector embeddings
+  using a sentence-level embedding model.
+- Computes cosine similarity between query embeddings and schema embeddings.
+- Retrieves the top-K most relevant database schemas per query.
+- Produces retrieval outputs used as input for downstream re-ranking stages.
+
+Key Characteristics:
+- Uses a pretrained embedding model without any fine-tuning or training.
+- All computation is performed locally (GPU preferred).
+- Retrieval is schema-level (database selection), not SQL generation.
+- Designed for reproducible baselines and ablation studies.
+
+Input:
+- Processed routing datasets:
+  - `processed_data/spider_route_test.json`
+  - `processed_data/bird_route_test.json`
+- Raw schema definitions loaded from `tables.json` files.
+
+Output:
+- Retrieval results saved as JSON:
+  - `results/spider_retrieval_results.json`
+  - `results/bird_retrieval_results.json`
+- Each entry contains the query, gold database ID, and a ranked list of
+  retrieved candidate databases.
+
+Supported Datasets:
+- Spider
+- BIRD (BirdSQL)
+
+Notes:
+- CUDA is strongly recommended for feasible runtime.
+- Embeddings are L2-normalized to enable cosine similarity via dot product.
+- This script represents the first stage of a retrieval → re-ranking pipeline
+  for database query routing.
+"""
+
 import os
 import json
 import torch

@@ -1,3 +1,40 @@
+"""
+Dataset Preparation Script for Query Routing Benchmarks (Spider & BIRD)
+
+This script prepares training and test splits for database-level
+query routing experiments using the Spider and BIRD (BirdSQL) datasets.
+
+Functionality:
+- Loads Spider train and dev JSON files and merges them into a single pool.
+- Groups queries by database ID and performs a deterministic 50/50 split
+  per database to create balanced train and test sets (Spider-Route).
+- Loads BirdSQL train and dev data using content-based heuristics to
+  distinguish it from Spider data.
+- Performs an identical per-database 50/50 deterministic split to produce
+  Bird-Route train and test sets.
+
+Key Characteristics:
+- Splitting is deterministic (no random seed required).
+- Ensures each database is represented in both train and test sets.
+- Designed for cross-domain NL-to-SQL query routing evaluation rather than
+  SQL generation.
+
+Input:
+- Raw Spider and BIRD JSON files placed under the `data/` directory.
+
+Output:
+- `processed_data/spider_route_train.json`
+- `processed_data/spider_route_test.json`
+- `processed_data/bird_route_train.json`
+- `processed_data/bird_route_test.json`
+
+Usage:
+- Organize datasets under the `data/` directory.
+- Run the script once to generate processed routing splits.
+- The resulting JSON files can be directly consumed by retrieval or
+  re-ranking models for evaluation.
+"""
+
 import os
 import json
 import sqlite3

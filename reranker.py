@@ -1,3 +1,53 @@
+"""
+Local LLM–Based Re-ranking Script for Database Query Routing
+
+This script performs re-ranking of candidate databases for natural language
+queries in cross-domain NL-to-SQL query routing tasks using a locally hosted
+large language model (LLM).
+
+Overview:
+- Takes initial database retrieval results (top-K candidates per query).
+- Uses a local instruction-tuned LLM to:
+  1. Generate table-level adjacency lists from database schemas.
+  2. Map phrases in a natural language query to schema entities.
+- Scores each candidate database using deterministic heuristics:
+  - Coverage score: penalizes unmapped query phrases.
+  - Connectivity score: checks whether referenced tables form a connected
+    subgraph under foreign-key relationships.
+  - Optional semantic similarity score using precomputed embeddings.
+- Re-ranks candidate databases based on the combined score.
+
+Key Characteristics:
+- All LLM inference is performed locally (no external API calls).
+- No model training or fine-tuning is performed.
+- Designed for explainable, rule-based re-ranking rather than end-to-end
+  learned ranking.
+
+Input:
+- Retrieval results in JSON format:
+  `results/<dataset>_retrieval_results.json`
+- Database schemas loaded via `load_schemas()`.
+
+Output:
+- Re-ranked results saved to:
+  `results/<dataset>_reranked_local.json`
+- Persistent cache of generated adjacency lists:
+  `adjacency_lists_local.json`
+
+Supported Datasets:
+- Spider
+- BIRD (BirdSQL)
+
+Usage:
+- Ensure processed datasets and retrieval results are available.
+- Configure the local LLM model name if required.
+- Run the script to generate re-ranked outputs for all configured datasets.
+
+Notes:
+- This script is intended for research experimentation and ablation studies
+  in query routing, not for production deployment.
+"""
+
 import os
 import json
 import time
@@ -63,35 +113,143 @@ llm_engine = None
 # --- Prompts ---
 
 def get_adjacency_prompt(schema_text: str) -> Tuple[str, str]:
-    sys = "You are an expert DB Administrator. Output ONLY valid JSON."
-    usr = f"""Given the following database schema, produce an adjacency list representing possible joins between tables under Foreign Key relationships.
+    sys = (
+        "You are a Senior Database Architect. "
+        "You MUST follow the instructions exactly. "
+        "Output ONLY valid JSON. "
+        "No explanations, no markdown, no extra text."
+    )
 
-Input Schema:
+    usr = f"""
+ROLE
+You are a Senior Database Architect. Your expertise lies in analyzing relational database schemas to understand data flow, dependencies, and
+potential join paths based on structure, naming conventions, and explicit constraints.
+
+OBJECTIVE
+Analyze the provided database schema and generate a directed adjacency list representing potential direct JOIN relationships between
+tables (ONLY INNER JOINS). The output must strictly use numerical indices for tables and adhere precisely to the specified format, reflecting
+both explicit and implied relationships suitable for join operations.
+
+INPUT SCHEMA
+[Schema Information]
 {schema_text}
 
-Output ONLY a JSON object where keys are Table Names and values are lists of Table Names they can join with.
-Example: {{"TableA": ["TableB"], "TableB": ["TableA", "TableC"]}}
+ANALYSIS AND PROCESSING STEPS
+1. Table Indexing: Assign a unique, sequential, 0-based numerical index to each table defined in the schema based on the order they appear
+or are logically grouped.
+
+2. Relationship Identification (Apply in order of priority): For each Table A (with index idx_A):
+   Identify likely Primary Key(s) for all tables. Assume standard PK naming conventions (e.g., id, uuid, <table_name>_id,
+   <table_name>_uuid, <table_name>_code) and PK constraints if specified.
+
+   Priority 1: Explicit Foreign Keys (FKs):
+   If Table A has an FK column that references the PK of Table B (with index idx_B), establish a directed relationship idx_A → idx_B.
+
+   Priority 2: Naming Conventions & Data Type Matching (Implied FKs):
+   If a column in Table A follows common FK naming patterns and matches a compatible PK in Table B, establish idx_A → idx_B.
+
+   Priority 3: Simple Name/Type Match (Lower Confidence):
+   If a column in Table A has the same data type as the likely PK of Table B and the name implies a relationship, establish idx_A → idx_B.
+
+3. Reciprocity Handling (VERY IMPORTANT):
+   If a relationship idx_A → idx_B is established, also establish idx_B → idx_A to represent bidirectional JOIN capability.
+
+4. Consolidation:
+   For each source table index, collect all unique target table indices and sort them numerically.
+
+OUTPUT SPECIFICATION
+Format: The output MUST be a JSON object encoding the adjacency list.
+
+Rules:
+- Keys MUST be numerical table indices as strings ("0", "1", ..., "N-1")
+- Values MUST be lists of numerical table indices
+- Target indices MUST be sorted in ascending order
+- Every table index from 0 to N-1 MUST be present
+- Tables with no joins MUST have an empty list
+- ONLY INNER JOIN relationships
+- ABSOLUTELY NO table names, column names, explanations, comments, or extra text
+
+Example:
+{{
+  "0": [1,2,5],
+  "1": [0],
+  "2": [],
+  "3": [4],
+  "4": [3],
+  "5": [0]
+}}
 """
     return sys, usr
 
 def get_mapping_prompt(query: str, schema_text: str) -> Tuple[str, str]:
-    sys = "You are an expert database assistant. Output ONLY valid JSON."
-    usr = f"""Question: "{query}"
+    sys = (
+        "You are an expert Database Administrator specializing in NLP and Schema Mapping. "
+        "Follow the instructions EXACTLY. "
+        "Output ONLY plain text mappings in the specified format. "
+        "No explanations, no markdown, no extra text."
+    )
 
-Schema:
+    usr = f"""
+Role: You are an expert Database Administrator specializing in Natural Language Processing (NLP) and Schema Mapping.
+
+Objective:
+Analyze a given natural language QUERY and map meaningful words or phrases within it to the most relevant columns in
+the provided database TABLE INFORMATION. Your goal is to identify the semantic connection between the user’s query terms
+and the underlying data structure.
+
+Inputs:
+1. QUERY: The natural language question posed by the user.
+2. TABLE INFORMATION: A description of the database schema, including table names and column definitions.
+
+FOLLOW THESE INSTRUCTIONS VERY STRICTLY:
+
+1. Analyze Context:
+Thoroughly examine both the QUERY and the TABLE INFORMATION. Understand relationships between tables (via Foreign Keys if provided)
+and the likely data stored in each column.
+
+2. Identify Mappable Terms:
+Extract words or multi-word phrases that carry semantic weight.
+Focus on:
+- Nouns (entities/attributes)
+- Verbs (actions implying status/entities)
+- Adjectives/Adverbs ONLY if they represent actual column values or states
+- Specific literal values (names, numbers, status values)
+
+DO NOT MAP:
+- SQL keywords (SELECT, WHERE, etc.)
+- Aggregate phrases ("number of", "how many")
+- General modifiers ("different", "unique", "lowest", etc.)
+- Stop words ("what", "the", "in", etc.)
+
+Special Rule:
+- "number of students" → map ONLY "students" to identifier column
+- "student number" → actual ID column
+
+3. Perform Column Mapping:
+- Direct & semantic matches
+- Verb-to-concept mappings
+- Entity-to-identifier mappings
+- Multiple valid mappings allowed
+- Use N/A ONLY if no justified mapping exists
+
+4. Precision:
+All mappings must be directly justifiable. No speculation.
+
+OUTPUT FORMAT (STRICT):
+Each mapping MUST be on its own line in this exact format:
+word_or_phrase - TableName.ColumnName
+
+If no match exists:
+word_or_phrase - N/A
+
+— START INPUT —
+QUERY: {query}
+
+TABLE INFORMATION:
 {schema_text}
+— END INPUT —
 
-Task: Extract phrases from the question and map them to the corresponding Table.Column in the schema.
-Identified phrases should include nouns, verbs, or adjectives that map to schema entities.
-If a phrase maps to multiple columns or tables, list all of them.
-
-Output ONLY a JSON object with this format:
-{{
-  "mappings": [
-    {{ "phrase": "exact phrase from text", "entities": ["Table.Column", "Table.Column"] }},
-    ...
-  ]
-}}
+ABSOLUTELY NO OTHER OUTPUT.
 """
     return sys, usr
 
