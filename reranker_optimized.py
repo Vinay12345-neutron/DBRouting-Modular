@@ -13,14 +13,15 @@ RESULTS_DIR = "results"
 ADJACENCY_FILE = "adjacency_lists_local.json"
 DATASETS = ["spider", "bird"]
 
-# LLM Config - Optimized for 4GB VRAM
-LLM_MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
+# LLM Config - Optimized for RTX 5090 / 4090
+LLM_MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
-# CRITICAL: Set this to True to enable 8-bit quantization for 4GB VRAM
+# CRITICAL: Set this to True to enable 8-bit quantization
+# 14B model takes ~15GB VRAM in 8-bit. Fits easily on 24GB+ cards.
 USE_8BIT_QUANTIZATION = True
 
-# For testing on small subset first
-MAX_SAMPLES = 10  # Set to 100 for testing, None for full run
+# Process ALL queries
+MAX_SAMPLES = None  # None = Run full dataset
 
 class LocalLLM:
     def __init__(self, model_name: str, use_8bit: bool = False):
