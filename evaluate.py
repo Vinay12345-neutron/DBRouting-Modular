@@ -1,3 +1,28 @@
+"""
+Evaluation Script for Database Retrieval and Re-ranking
+
+This script evaluates database retrieval and re-ranking outputs for
+cross-domain NL-to-SQL query routing tasks (e.g., Spider and BIRD).
+
+Given a JSON file containing model predictions per query, it computes:
+- Recall@K (K = 1, 3, 5): Whether the gold database appears in the top-K candidates.
+- Mean Average Precision (mAP): Computed as 1 / rank of the gold database
+  for single-ground-truth scenarios.
+
+The script supports two output formats:
+1. Retrieval-only results (`retrieved_dbs`)
+2. Re-ranked results (`reranked_candidates`)
+
+Each results file is expected to contain a list of query-level entries,
+where each entry specifies the gold database and an ordered list of
+predicted candidate databases.
+
+Usage:
+- Place result JSON files in the `results/` directory.
+- Run the script to evaluate baseline retrieval and re-ranked outputs
+  for Spider and BIRD datasets.
+"""
+
 import json
 import os
 import numpy as np
