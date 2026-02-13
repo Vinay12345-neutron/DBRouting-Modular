@@ -57,8 +57,10 @@ load_dotenv()
 # Configuration Constants
 DATA_DIR = "processed_data"
 RAW_DATA_DIR = "data"
-MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
+# User requested "Qwen3-Embedding-4B-Instruct"
+MODEL_NAME = "Qwen/Qwen3-Embedding-4B" 
 OUTPUT_DIR = "results"
+METRICS_FILE = os.path.join(OUTPUT_DIR, "baseline_metrics.csv")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def get_device() -> str:
@@ -252,8 +254,43 @@ def run_retrieval(model: EmbeddingModel, queries: List[str], db_ids: List[str], 
             
     return all_top_k_dbs
 
+def calculate_metrics(dataset_name, queries, gold_dbs, top_k_results):
+    k_values = [1, 2, 3, 5, 10]
+    recalls = {k: [] for k in k_values}
+    mrr_sum = 0
+    
+    for gold, retrieved in zip(gold_dbs, top_k_results):
+        # Recall @ K
+        for k in k_values:
+            recalls[k].append(1 if gold in retrieved[:k] else 0)
+            
+        # MRR (Mean Reciprocal Rank) acts as a proxy for MAP in single-ground-truth retrieval
+        if gold in retrieved:
+            rank = retrieved.index(gold) + 1
+            mrr_sum += 1.0 / rank
+            
+    # Aggregate
+    metrics = {f"R@{k}": np.mean(recalls[k]) for k in k_values}
+    metrics["MRR"] = mrr_sum / len(gold_dbs)
+    metrics["Dataset"] = dataset_name
+    metrics["Model"] = MODEL_NAME
+    
+    print(f"\n--- {dataset_name} Metrics ---")
+    for k, v in metrics.items():
+        if isinstance(v, float):
+            print(f"{k}: {v:.4f}")
+            
+    return metrics
+
+def save_metrics_to_csv(metrics_list):
+    df = pd.DataFrame(metrics_list)
+    # Check if file exists to determine if we write header
+    mode = 'a' if os.path.exists(METRICS_FILE) else 'w'
+    header = not os.path.exists(METRICS_FILE)
+    df.to_csv(METRICS_FILE, mode=mode, header=header, index=False)
+    print(f"\nMetrics appended to {METRICS_FILE}")
+
 def main():
-    # Initialize Model (Expects CUDA)
     try:
         model = EmbeddingModel()
     except Exception as e:
@@ -264,6 +301,8 @@ def main():
     if not schemas:
         print("No schemas loaded. Check data/ path.")
         return
+        
+    all_metrics = []
 
     # Process Spider-Route
     spider_path = os.path.join(DATA_DIR, "spider_route_test.json")
@@ -272,38 +311,25 @@ def main():
         try:
             with open(spider_path, 'r') as f:
                 spider_test = json.load(f)
-                
+            
+            # Using subset logic if needed (currently full)
             spider_queries = [item['question'] for item in spider_test]
             spider_gold_dbs = [item['db_id'] for item in spider_test]
             
-            # Run Retrieval
-            top_k_results = run_retrieval(model, spider_queries, spider_gold_dbs, schemas)
+            top_k_results = run_retrieval(model, spider_queries, spider_gold_dbs, schemas, k=20)
             
-            # Structuring Results
             results = []
-            recall_1_count = 0
-            for i, (query, gold, retrieved) in enumerate(zip(spider_queries, spider_gold_dbs, top_k_results)):
-                results.append({
-                    "question": query,
-                    "gold_db": gold,
-                    "retrieved_dbs": retrieved
-                })
-                if gold == retrieved[0]:
-                    recall_1_count += 1
-                
-            # Metric Preview
-            print(f"Spider Recall@1: {recall_1_count / len(results):.4f}")
+            for q, g, r in zip(spider_queries, spider_gold_dbs, top_k_results):
+                results.append({"question": q, "gold_db": g, "retrieved_dbs": r})
             
-            # Save Output
-            out_file = os.path.join(OUTPUT_DIR, "spider_retrieval_results.json")
-            with open(out_file, 'w') as f:
+            with open(os.path.join(OUTPUT_DIR, "spider_retrieval_results.json"), 'w') as f:
                 json.dump(results, f, indent=2)
-            print(f"Saved results to {out_file}")
+                
+            metrics = calculate_metrics("Spider", spider_queries, spider_gold_dbs, top_k_results)
+            all_metrics.append(metrics)
             
         except Exception as e:
             print(f"Error processing Spider: {e}")
-    else:
-        print(f"Skipping Spider: {spider_path} not found.")
 
     # Process Bird-Route
     bird_path = os.path.join(DATA_DIR, "bird_route_test.json")
@@ -316,30 +342,23 @@ def main():
             bird_queries = [item['question'] for item in bird_test]
             bird_gold_dbs = [item['db_id'] for item in bird_test]
             
-            top_k_results = run_retrieval(model, bird_queries, bird_gold_dbs, schemas)
+            top_k_results = run_retrieval(model, bird_queries, bird_gold_dbs, schemas, k=20)
             
             results = []
-            recall_1_count = 0
-            for i, (query, gold, retrieved) in enumerate(zip(bird_queries, bird_gold_dbs, top_k_results)):
-                results.append({
-                    "question": query,
-                    "gold_db": gold,
-                    "retrieved_dbs": retrieved
-                })
-                if gold == retrieved[0]:
-                    recall_1_count += 1
-                    
-            print(f"Bird Recall@1: {recall_1_count / len(results):.4f}")
+            for q, g, r in zip(bird_queries, bird_gold_dbs, top_k_results):
+                results.append({"question": q, "gold_db": g, "retrieved_dbs": r})
             
-            out_file = os.path.join(OUTPUT_DIR, "bird_retrieval_results.json")
-            with open(out_file, 'w') as f:
+            with open(os.path.join(OUTPUT_DIR, "bird_retrieval_results.json"), 'w') as f:
                 json.dump(results, f, indent=2)
-            print(f"Saved results to {out_file}")
+                
+            metrics = calculate_metrics("Bird", bird_queries, bird_gold_dbs, top_k_results)
+            all_metrics.append(metrics)
 
         except Exception as e:
             print(f"Error processing Bird: {e}")
-    else:
-        print(f"Skipping Bird: {bird_path} not found.")
+
+    if all_metrics:
+        save_metrics_to_csv(all_metrics)
 
 if __name__ == "__main__":
     main()

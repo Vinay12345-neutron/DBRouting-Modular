@@ -1,0 +1,53 @@
+# 🐍 Conda Setup Guide for RTX 5090
+
+Your professor is right. The system-level Python might be too old or broken for the 5090. **Conda** is the industry standard because it installs its own safe CUDA libraries.
+
+**Follow these steps on the server:**
+
+### 1. Install Miniconda (Small version of Anaconda)
+```bash
+# Download installer
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+# Run installer (Type 'yes' to license and 'yes' to init)
+bash Miniconda3-latest-Linux-x86_64.sh
+
+'''
+# Try initializing specifically
+~/miniconda3/bin/conda init bash
+# OR if that folder doesn't exist, try:
+~/anaconda3/bin/conda init bash
+
+# Refresh terminal to make 'conda' command work
+source ~/.bashrc
+```
+
+
+
+### 2. Create a Clean Environment
+We will use Python 3.11 (modern & stable).
+```bash
+conda create -n dbrouting python=3.11 -y
+conda activate dbrouting
+```
+
+### 3. Install CUDA Toolkit & PyTorch Nightly 🛠️
+This is the magic part. Conda will ensure the drivers match.
+```bash
+# 1. Install NVIDIA CUDA Toolkit 12.4+ (required for 5090) from nvidia channel
+conda install -c nvidia cuda-toolkit -y
+
+# 2. Install PyTorch Nightly (CUDA 12.6 support)
+pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu126
+```
+
+### 4. Install Other Dependencies
+```bash
+pip install transformers accelerate bitsandbytes scikit-learn pandas numpy google-generativeai tqdm sentence-transformers einops python-dotenv
+```
+
+### 5. Launch 🚀
+```bash
+nohup python reranker_optimized.py > run.log 2>&1 &
+tail -f run.log
+```
