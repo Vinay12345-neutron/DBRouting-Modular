@@ -6,6 +6,10 @@ import numpy as np
 from typing import List, Dict, Tuple, Optional
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from tqdm import tqdm
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # --- Configuration ---
 DATA_DIR = "processed_data"
@@ -14,25 +18,27 @@ ADJACENCY_FILE = "adjacency_lists_local.json"
 DATASETS = ["spider", "bird"]
 
 # LLM Config - Optimized for RTX 5090 / 4090
-LLM_MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
+# 14B is too slow (20s/query). Switching to 7B for 3x speedup.
+LLM_MODEL_NAME = "Qwen/Qwen2.5-7B-Instruct"
 
 # MODE: "local" or "api"
 # "local": Uses local GPU (RTX 5090). Fast, Free, Private.
-# "api": Uses DeepSeek API. requires DEEPSEEK_API_KEY env var. No VRAM usage.
-EXECUTION_MODE = "local" 
+# "api": Uses DeepSeek API. Requires API key. No VRAM usage.
+EXECUTION_MODE = "api" 
 
 # Local settings
-USE_8BIT_QUANTIZATION = True # RECOMMENDED: Set True to fix OOM on 5090!
+USE_8BIT_QUANTIZATION = False
 
 # API settings
 API_BASE_URL = "https://api.deepseek.com"
 API_MODEL_NAME = "deepseek-chat"
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
 # Process ALL queries
 MAX_SAMPLES = None 
 
 class LLMEngine:
-    def __init__(self, mode="local", model_name=LLM_MODEL_NAME, use_8bit=False):
+    def __init__(self, mode="local", model_name=LLM_MODEL_NAME, use_8bit=False, api_key=None):
         self.mode = mode
         print(f"Initializing LLM Engine in [{mode.upper()}] mode...")
         
@@ -68,11 +74,12 @@ class LLMEngine:
         elif mode == "api":
             try:
                 from openai import OpenAI
-                api_key = os.getenv("DEEPSEEK_API_KEY")
-                if not api_key:
-                    raise ValueError("DEEPSEEK_API_KEY environment variable not set.")
+                # Use provided key or env var
+                key = api_key or os.getenv("DEEPSEEK_API_KEY")
+                if not key:
+                    raise ValueError("DEEPSEEK_API_KEY not configured.")
                 
-                self.client = OpenAI(api_key=api_key, base_url=API_BASE_URL)
+                self.client = OpenAI(api_key=key, base_url=API_BASE_URL)
                 print(f"Connected to DeepSeek API ({API_MODEL_NAME})")
             except ImportError:
                 print("Error: 'openai' package not installed. Run 'pip install openai'")
@@ -414,7 +421,12 @@ def main():
     print("=" * 60)
     
     # Load LLM Engine
-    llm_engine = LLMEngine(mode=EXECUTION_MODE, model_name=LLM_MODEL_NAME, use_8bit=USE_8BIT_QUANTIZATION)
+    llm_engine = LLMEngine(
+        mode=EXECUTION_MODE, 
+        model_name=LLM_MODEL_NAME, 
+        use_8bit=USE_8BIT_QUANTIZATION,
+        api_key=DEEPSEEK_API_KEY
+    )
     
     # Load embedding model (optional for semantic scoring)
     print("\nLoading Embedding Model for Semantic Scoring...")

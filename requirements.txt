@@ -9,4 +9,5 @@ numpy
 google-generativeai
 tqdm
 sentence-transformers
-einops
+
+python-dotenv
