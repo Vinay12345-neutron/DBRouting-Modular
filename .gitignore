@@ -9,7 +9,6 @@ __pycache__/
 # Databases
 *.db
 data/
-processed_data/
 offload_weights/
 
 

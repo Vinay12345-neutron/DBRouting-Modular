@@ -163,14 +163,20 @@ def load_schemas() -> Dict[str, str]:
     """
     schemas = {}
     
-    # Define paths to potential schema files
+    # Define paths to potential schema files (User provided specific names in processed_data)
     files = [
+        # Spider
+        os.path.join(DATA_DIR, "spider_table.json"),     # User specific name
+        os.path.join(DATA_DIR, "tables.json"),          # Standard fallback
         os.path.join(RAW_DATA_DIR, "spider_data", "tables.json"),
+        
+        # Bird
+        os.path.join(DATA_DIR, "dev_tables.json"),      # Bird Dev
+        os.path.join(DATA_DIR, "train_tables.json"),    # Bird Train
         os.path.join(RAW_DATA_DIR, "train", "train_tables.json"),
-        # Add Bird paths if different
     ]
     
-    print("Loading schemas...")
+    print(f"Searching for schemas in: {files}")
     for f_path in files:
         if os.path.exists(f_path):
             print(f"Reading {f_path}...")
