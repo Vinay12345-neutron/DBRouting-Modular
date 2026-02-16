@@ -16,53 +16,92 @@ DATASETS = ["spider", "bird"]
 # LLM Config - Optimized for RTX 5090 / 4090
 LLM_MODEL_NAME = "Qwen/Qwen2.5-14B-Instruct"
 
-# CRITICAL: Disable 8-bit for RTX 5090 (bitsandbytes issue with sm_120)
-# 32GB VRAM is enough for 14B in FP16 (approx 28GB).
-USE_8BIT_QUANTIZATION = False
+# MODE: "local" or "api"
+# "local": Uses local GPU (RTX 5090). Fast, Free, Private.
+# "api": Uses DeepSeek API. requires DEEPSEEK_API_KEY env var. No VRAM usage.
+EXECUTION_MODE = "local" 
+
+# Local settings
+USE_8BIT_QUANTIZATION = True # RECOMMENDED: Set True to fix OOM on 5090!
+
+# API settings
+API_BASE_URL = "https://api.deepseek.com"
+API_MODEL_NAME = "deepseek-chat"
 
 # Process ALL queries
-MAX_SAMPLES = None  # None = Run full dataset
+MAX_SAMPLES = None 
 
-class LocalLLM:
-    def __init__(self, model_name: str, use_8bit: bool = False):
-        print(f"Loading Local LLM: {model_name}...")
-        print(f"8-bit quantization: {use_8bit}")
+class LLMEngine:
+    def __init__(self, mode="local", model_name=LLM_MODEL_NAME, use_8bit=False):
+        self.mode = mode
+        print(f"Initializing LLM Engine in [{mode.upper()}] mode...")
         
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
-        
-        # Fix padding token if missing
-        if self.tokenizer.pad_token is None:
-            self.tokenizer.pad_token = self.tokenizer.eos_token
-            print("Set pad_token = eos_token")
-        
-        # Configure quantization for 4GB VRAM
-        load_kwargs = {
-            "trust_remote_code": True,
-            "low_cpu_mem_usage": True,
-        }
-        
-        if use_8bit and torch.cuda.is_available():
-            print("Using 8-bit quantization to save VRAM...")
-            bnb_config = BitsAndBytesConfig(
-                load_in_8bit=True,
-                llm_int8_threshold=6.0,
-            )
-            load_kwargs["quantization_config"] = bnb_config
-            load_kwargs["device_map"] = "auto"
-        else:
-            load_kwargs["torch_dtype"] = torch.float16
-            load_kwargs["device_map"] = "auto"
-        
-        self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
-        self.device = self.model.device if hasattr(self.model, 'device') else 'cuda'
-        print(f"Local LLM Loaded on {self.device}.")
-        
-        # Clear cache after loading
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-            gc.collect()
+        if mode == "local":
+            print(f"Loading Local LLM: {model_name}...")
+            print(f"8-bit quantization: {use_8bit}")
+            
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+            if self.tokenizer.pad_token is None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+            
+            load_kwargs = {
+                "trust_remote_code": True,
+                "low_cpu_mem_usage": True,
+            }
+            
+            if use_8bit and torch.cuda.is_available():
+                print("Using 8-bit quantization (bitsandbytes)...")
+                bnb_config = BitsAndBytesConfig(
+                    load_in_8bit=True,
+                    llm_int8_threshold=6.0,
+                )
+                load_kwargs["quantization_config"] = bnb_config
+                load_kwargs["device_map"] = "auto"
+            else:
+                load_kwargs["torch_dtype"] = torch.float16
+                load_kwargs["device_map"] = "auto"
+            
+            self.model = AutoModelForCausalLM.from_pretrained(model_name, **load_kwargs)
+            self.device = self.model.device
+            print(f"Local LLM Loaded on {self.device}.")
+            
+        elif mode == "api":
+            try:
+                from openai import OpenAI
+                api_key = os.getenv("DEEPSEEK_API_KEY")
+                if not api_key:
+                    raise ValueError("DEEPSEEK_API_KEY environment variable not set.")
+                
+                self.client = OpenAI(api_key=api_key, base_url=API_BASE_URL)
+                print(f"Connected to DeepSeek API ({API_MODEL_NAME})")
+            except ImportError:
+                print("Error: 'openai' package not installed. Run 'pip install openai'")
+                raise
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
+        if self.mode == "local":
+            return self._generate_local(system_prompt, user_prompt)
+        else:
+            return self._generate_api(system_prompt, user_prompt)
+
+    def _generate_api(self, system_prompt: str, user_prompt: str) -> str:
+        try:
+            response = self.client.chat.completions.create(
+                model=API_MODEL_NAME,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                max_tokens=1024,
+                temperature=0.1,
+                stream=False
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"API Error: {e}")
+            return "{}"
+
+    def _generate_local(self, system_prompt: str, user_prompt: str) -> str:
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
@@ -82,7 +121,7 @@ class LocalLLM:
             prompt, 
             return_tensors="pt",
             truncation=True,
-            max_length=2048  # Limit context for 4GB VRAM
+            max_length=4096 
         ).to(self.device)
         
         with torch.no_grad():
@@ -92,17 +131,14 @@ class LocalLLM:
                 pad_token_id=self.tokenizer.eos_token_id,
                 temperature=0.1,
                 do_sample=False,
-                num_beams=1  # Disable beam search to save memory
+                num_beams=1 
             )
         
-        # Decode only new tokens
         generated_ids = output_ids[0][inputs.input_ids.shape[-1]:]
         generated_text = self.tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
         
-        # Clean markdown
         generated_text = generated_text.replace("```json", "").replace("```", "").strip()
         
-        # Clear VRAM after each generation
         del inputs, output_ids, generated_ids
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -377,8 +413,8 @@ def main():
     print("4GB VRAM Optimized Re-ranker")
     print("=" * 60)
     
-    # Load LLM with quantization
-    llm_engine = LocalLLM(LLM_MODEL_NAME, use_8bit=USE_8BIT_QUANTIZATION)
+    # Load LLM Engine
+    llm_engine = LLMEngine(mode=EXECUTION_MODE, model_name=LLM_MODEL_NAME, use_8bit=USE_8BIT_QUANTIZATION)
     
     # Load embedding model (optional for semantic scoring)
     print("\nLoading Embedding Model for Semantic Scoring...")
