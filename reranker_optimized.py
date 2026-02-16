@@ -77,7 +77,13 @@ class LLMEngine:
                 # Use provided key or env var
                 key = api_key or os.getenv("DEEPSEEK_API_KEY")
                 if not key:
-                    raise ValueError("DEEPSEEK_API_KEY not configured.")
+                    print(f"DEBUG: Current Directory: {os.getcwd()}")
+                    print(f"DEBUG: .env file exists: {os.path.exists('.env')}")
+                    print("DEBUG: Checking os.environ content (first 5 chars):")
+                    for k, v in os.environ.items():
+                        if "API" in k: print(f"{k}: {v[:5]}...")
+                    
+                    raise ValueError("DEEPSEEK_API_KEY not configured. Please check .env file.")
                 
                 self.client = OpenAI(api_key=key, base_url=API_BASE_URL)
                 print(f"Connected to DeepSeek API ({API_MODEL_NAME})")
