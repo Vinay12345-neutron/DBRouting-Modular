@@ -202,6 +202,28 @@ def load_schemas() -> Dict[str, str]:
                         schema_text.append(f"Table: {table}, Columns: {cols_str}")
                         
                     full_text = f"Database: {db_id}. " + "; ".join(schema_text)
+                    
+                    # Add Foreign Keys (Critical for Spider)
+                    fks = db.get('foreign_keys', [])
+                    if fks:
+                        fk_list = []
+                        for fk_pair in fks:
+                            # fk_pair is [col_idx_from, col_idx_to]
+                            if len(fk_pair) == 2:
+                                c_from_idx, c_to_idx = fk_pair
+                                # column_names contains [table_idx, col_name]
+                                if c_from_idx < len(column_names) and c_to_idx < len(column_names):
+                                    t_idx_from, c_name_from = column_names[c_from_idx]
+                                    t_idx_to, c_name_to = column_names[c_to_idx]
+                                    
+                                    if t_idx_from < len(table_names) and t_idx_to < len(table_names):
+                                        t_from = table_names[t_idx_from]
+                                        t_to = table_names[t_idx_to]
+                                        fk_list.append(f"{t_from}.{c_name_from} -> {t_to}.{c_name_to}")
+                        
+                        if fk_list:
+                            full_text += ". Foreign keys: " + ", ".join(fk_list)
+                            
                     schemas[db_id] = full_text
     
     print(f"Loaded {len(schemas)} unique database schemas.")
@@ -261,8 +283,10 @@ def run_retrieval(model: EmbeddingModel, queries: List[str], db_ids: List[str], 
     return all_top_k_dbs
 
 def calculate_metrics(dataset_name, queries, gold_dbs, top_k_results):
-    k_values = [1, 2, 3, 5, 10]
+    k_values = [1, 3, 5, 10, 20]
     recalls = {k: [] for k in k_values}
+    # MAP (Mean Average Precision) = MRR (Mean Reciprocal Rank) in this context 
+    # since there is only 1 relevant item (gold_db) per query.
     mrr_sum = 0
     
     for gold, retrieved in zip(gold_dbs, top_k_results):
@@ -270,21 +294,28 @@ def calculate_metrics(dataset_name, queries, gold_dbs, top_k_results):
         for k in k_values:
             recalls[k].append(1 if gold in retrieved[:k] else 0)
             
-        # MRR (Mean Reciprocal Rank) acts as a proxy for MAP in single-ground-truth retrieval
+        # MRR / MAP calculation
         if gold in retrieved:
             rank = retrieved.index(gold) + 1
             mrr_sum += 1.0 / rank
             
     # Aggregate
-    metrics = {f"R@{k}": np.mean(recalls[k]) for k in k_values}
-    metrics["MRR"] = mrr_sum / len(gold_dbs)
+    num_samples = len(gold_dbs)
+    metrics = {}
+    for k in k_values:
+        metrics[f"R@{k}"] = np.mean(recalls[k])
+        
+    metrics["MAP"] = mrr_sum / num_samples
     metrics["Dataset"] = dataset_name
     metrics["Model"] = MODEL_NAME
     
-    print(f"\n--- {dataset_name} Metrics ---")
-    for k, v in metrics.items():
-        if isinstance(v, float):
-            print(f"{k}: {v:.4f}")
+    print(f"\n--- {dataset_name} Metrics (N={num_samples}) ---")
+    print(f"R@1: {metrics['R@1']:.4f}")
+    print(f"R@3: {metrics['R@3']:.4f}")
+    print(f"R@5: {metrics['R@5']:.4f}")
+    print(f"R@10:{metrics['R@10']:.4f}")
+    print(f"R@20:{metrics['R@20']:.4f}")
+    print(f"MAP: {metrics['MAP']:.4f}")
             
     return metrics
 
@@ -333,6 +364,26 @@ def main():
                 
             metrics = calculate_metrics("Spider", spider_queries, spider_gold_dbs, top_k_results)
             all_metrics.append(metrics)
+
+            # Save Misclassified (Gold not in Top 1)
+            misclassified = []
+            for q, g, r in zip(spider_queries, spider_gold_dbs, top_k_results):
+                if g != r[0]:
+                    try:
+                        rank = r.index(g) + 1
+                    except ValueError:
+                        rank = -1 # Not in Top-K
+                    
+                    misclassified.append({
+                        "question": q,
+                        "gold_db": g,
+                        "retrieved_top5": r[:5],
+                        "gold_rank": rank
+                    })
+            
+            with open(os.path.join(OUTPUT_DIR, "spider_misclassified.json"), 'w') as f:
+                json.dump(misclassified, f, indent=2)
+            print(f"Saved {len(misclassified)} misclassified queries to spider_misclassified.json")
             
         except Exception as e:
             print(f"Error processing Spider: {e}")

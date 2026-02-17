@@ -76,12 +76,30 @@ class LLMEngine:
                 from openai import OpenAI
                 # Use provided key or env var
                 key = api_key or os.getenv("DEEPSEEK_API_KEY")
+                
+                # Fallback: Manually read .env if os.getenv failed
+                if not key and os.path.exists(".env"):
+                    try:
+                        with open(".env", "r") as f:
+                            for line in f:
+                                if line.strip().startswith("DEEPSEEK_API_KEY"):
+                                    parts = line.split("=", 1)
+                                    if len(parts) == 2:
+                                        key = parts[1].strip().strip('"').strip("'")
+                                        print("DEBUG: Loaded key manually from .env")
+                                        break
+                    except Exception as e:
+                        print(f"DEBUG: Failed to read .env manually: {e}")
+
                 if not key:
                     print(f"DEBUG: Current Directory: {os.getcwd()}")
                     print(f"DEBUG: .env file exists: {os.path.exists('.env')}")
-                    print("DEBUG: Checking os.environ content (first 5 chars):")
-                    for k, v in os.environ.items():
-                        if "API" in k: print(f"{k}: {v[:5]}...")
+                    # Print sanitized content of .env to see what is going on
+                    if os.path.exists(".env"):
+                        print("DEBUG: .env content:")
+                        with open(".env", "r") as f:
+                            for line in f:
+                                print(f"  {line.strip()}")
                     
                     raise ValueError("DEEPSEEK_API_KEY not configured. Please check .env file.")
                 
