@@ -163,11 +163,12 @@ def load_schemas() -> Dict[str, str]:
     """
     schemas = {}
     
-    # Define paths to potential schema files (User provided specific names in processed_data)
+    # Define paths to potential schema files
     files = [
-        # Spider
-        os.path.join(DATA_DIR, "spider_table.json"),     # User specific name
-        os.path.join(DATA_DIR, "tables.json"),          # Standard fallback
+        # Spider - corrected paths
+        os.path.join(DATA_DIR, "spider_tables.json"),      # Main Spider schemas
+        os.path.join(DATA_DIR, "spider_test_tables.json"), # Test-specific schemas
+        os.path.join(DATA_DIR, "tables.json"),             # Fallback
         os.path.join(RAW_DATA_DIR, "spider_data", "tables.json"),
         
         # Bird
